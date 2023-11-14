@@ -121,6 +121,25 @@ const NlpComponent = () => {
       console.error("Error performing translation:", error);
     }
   };
+
+  const [synonymsAntonyms, setSynonymsAntonyms] = useState({});
+
+  const handleSynonymsAntonyms = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/synonyms_antonyms",
+        {
+          word: text,
+          lang: selectedLanguage,
+        }
+      );
+
+      console.log("Synonyms & Antonyms are :", response.data);
+      setSynonymsAntonyms(response.data);
+    } catch (error) {
+      console.error("Error performing translation:", error);
+    }
+  };
   React.useEffect(() => {
     if (selectedTargetLanguage) {
       handleTranslation();
@@ -201,6 +220,12 @@ const NlpComponent = () => {
         >
           Tokens Attributtes
         </button>
+        <button
+          className={"css-button-3d--blue"}
+          onClick={handleSynonymsAntonyms}
+        >
+          Synonyms & Antonyms
+        </button>
         <div>
           <h2>Convert to Language:</h2>
           {languageData.map((language) => (
@@ -251,6 +276,35 @@ const NlpComponent = () => {
             </div>
           )}
         </ul>
+      </div>
+      <div>
+        <h2>{`Word: ${text}`}</h2>
+        <div>
+          <h3>Synonyms:</h3>
+          {synonymsAntonyms.synonyms ? (
+            <ul>
+              {synonymsAntonyms.synonyms.map((synonym, index) => (
+                <li style={{ listStyleType: "square" }} key={index}>
+                  {synonym}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No synonyms available</p>
+          )}
+        </div>
+        <div>
+          <h3>Antonyms:</h3>
+          {synonymsAntonyms.antonyms ? (
+            <ul className="json-pre">
+              {synonymsAntonyms.antonyms.map((antonym, index) => (
+                <li key={index}>{antonym}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No antonyms available</p>
+          )}
+        </div>
       </div>
       <div>
         <h3>Tokens</h3>

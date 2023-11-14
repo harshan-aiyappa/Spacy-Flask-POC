@@ -3,6 +3,11 @@ from flask_cors import CORS
 import spacy
 # from langdetect import detect
 from translate import Translator
+from nltk.corpus import wordnet
+from nltk.corpus.reader.wordnet import WordNetError
+
+# language mapping for different ISO language Codes
+# from language_mapping import map_iso_639_1_to_nltk_corpus
 
 app = Flask(__name__)
 # translator = Translator()
@@ -187,6 +192,43 @@ def translate_text():
         return jsonify({'error': str(e)}), 500
 
 
+def get_synonyms_and_antonyms(word, lang='eng'):
+    synonyms = set()
+    antonyms = set()
+
+    try:
+        synsets = wordnet.synsets(word, lang=lang)
+        for synset in synsets:
+            for lemma in synset.lemmas(lang=lang):
+                synonyms.add(lemma.name())
+
+                # Retrieve antonyms
+                for antonym in lemma.antonyms():
+                    antonyms.add(antonym.name())
+    except WordNetError:
+        pass
+
+    return list(synonyms), list(antonyms)
+
+
+@app.route('/synonyms_antonyms', methods=['POST'])
+def synonyms_antonyms():
+    data = request.json
+    print(data)
+    word = data.get('word')
+
+    # Default to English if lang parameter is not provided
+    lang = map_iso_639_1_to_nltk_corpus(data.get('lang', 'en'))
+
+    if not word:
+        return jsonify({'error': 'Word parameter is missing'}), 400
+
+    synonyms, antonyms = get_synonyms_and_antonyms(word, lang)
+    result = {'word': word, 'synonyms': synonyms, 'antonyms': antonyms}
+
+    return jsonify(result)
+
+
 @app.errorhandler(400)
 def bad_request(error):
     return jsonify({'error': 'Bad request', 'message': error.description}), 400
@@ -195,6 +237,45 @@ def bad_request(error):
 @app.errorhandler(500)
 def internal_server_error(error):
     return jsonify({'error': 'Internal server error', 'message': 'Something went wrong on the server'}), 500
+
+
+def map_iso_639_1_to_nltk_corpus(iso_639_1_code):
+    # Define the mapping dictionaries
+    iso_639_1_codes_to_names = {
+        'en': 'English',
+        'es': 'Spanish',
+        'pt': 'Portuguese',
+        'fr': 'French',
+        'it': 'Italian',
+        'de': 'German',
+        'nl': 'Dutch',
+        'ru': 'Russian',
+        'ja': 'Japanese',
+        'fa': 'Persian',
+        'nn': 'Norwegian (Nynorsk)',
+        'nb': 'Norwegian (Bokmål)',
+    }
+
+    nltk_corpus_codes = {
+        'English': 'eng',
+        'Spanish': 'spa',
+        'Portuguese': 'por',
+        'French': 'fra',
+        'Italian': 'ita',
+        'German': 'deu',
+        'Dutch': 'nld',
+        'Russian': 'rus',
+        'Japanese': 'jpn',
+        'Persian': 'fas',
+        'Norwegian (Nynorsk)': 'nno',
+        'Norwegian (Bokmål)': 'nob',
+    }
+
+    # Map ISO 639-1 code to NLTK corpus code
+    language_name = iso_639_1_codes_to_names.get(iso_639_1_code)
+    nltk_corpus_code = nltk_corpus_codes.get(language_name)
+
+    return nltk_corpus_code
 
 
 if __name__ == '__main__':
