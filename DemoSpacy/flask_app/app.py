@@ -229,6 +229,58 @@ def synonyms_antonyms():
     return jsonify(result)
 
 
+@app.route('/get_token_info', methods=['POST'])
+def get_token_info():
+    # Get the sentence and language from the POST request data
+    data = request.get_json()
+    text = data['sentence']
+    lng = data['lng']
+
+    # Load the appropriate spaCy model based on the language
+    if lng == "en":
+        nlp_model = nlp_en
+    elif lng == "pt":
+        nlp_model = nlp_pt
+    elif lng == "es":
+        nlp_model = nlp_es
+    else:
+        return jsonify({'error': 'Unsupported language'}), 400
+
+    # Process the sentence using spaCy
+    doc = nlp_model(text)
+
+    # Calculate the similarity to a specific token dynamically
+    target_token = 'processing'
+    target_token_similarity = doc[0].similarity(nlp_model.vocab[target_token])
+
+    token_info_list = []
+
+    for token in doc:
+        token_info = {
+            "Token": token.text,
+            "Lemma": token.lemma_,
+            "DependencyParsing": {
+                "Dependency": token.dep_,
+                "HeadText": token.head.text
+            },
+            "NER": {
+                "EntityType": token.ent_type_,
+                "IOBCode": token.ent_iob_
+            },
+            "WordVector": list(token.vector[:5]),  # Converting numpy array to list
+            "SimilarityToProcessing": target_token_similarity,
+            "WordShape": token.shape_,
+            "IsStopWord": token.is_stop,
+            "IsPunctuation": token.is_punct,
+            "IsSpace": token.is_space,
+            "IsNumeric": token.is_digit,
+            "SentenceIndex": token.sent.start,
+            "PositionInSentence": token.i
+        }
+        token_info_list.append(token_info)
+
+    return jsonify(token_info_list)
+
 @app.errorhandler(400)
 def bad_request(error):
     return jsonify({'error': 'Bad request', 'message': error.description}), 400
