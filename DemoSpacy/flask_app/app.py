@@ -233,15 +233,16 @@ def synonyms_antonyms():
 def get_token_info():
     # Get the sentence and language from the POST request data
     data = request.get_json()
-    text = data['sentence']
-    lng = data['lng']
-
+    
+    text = data.get('sentence')
+    lang = data.get('lang', 'en')
+    print("get_token_info :",text,lang)
     # Load the appropriate spaCy model based on the language
-    if lng == "en":
+    if lang == "en":
         nlp_model = nlp_en
-    elif lng == "pt":
+    elif lang == "pt":
         nlp_model = nlp_pt
-    elif lng == "es":
+    elif lang == "es":
         nlp_model = nlp_es
     else:
         return jsonify({'error': 'Unsupported language'}), 400
@@ -267,7 +268,6 @@ def get_token_info():
                 "EntityType": token.ent_type_,
                 "IOBCode": token.ent_iob_
             },
-            "WordVector": list(token.vector[:5]),  # Converting numpy array to list
             "SimilarityToProcessing": target_token_similarity,
             "WordShape": token.shape_,
             "IsStopWord": token.is_stop,

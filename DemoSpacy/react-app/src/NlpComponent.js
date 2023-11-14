@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import languageData from "./languageData";
+import TokenInfo from "./components/TokenInfo";
 console.log(languageData);
 const NlpComponent = () => {
   const [text, setText] = useState("");
@@ -123,6 +124,23 @@ const NlpComponent = () => {
   };
 
   const [synonymsAntonyms, setSynonymsAntonyms] = useState({});
+  const [tokenInfoData, setTokeInfoData] = useState([]);
+  const handleGetTokenInfo = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/get_token_info",
+        {
+          sentence: text,
+          lang: selectedLanguage,
+        }
+      );
+  
+      console.log("Token Info:", response.data);
+      setTokeInfoData(response.data);
+    } catch (error) {
+      console.error("Error getting token information:", error);
+    }
+  };
 
   const handleSynonymsAntonyms = async () => {
     try {
@@ -140,6 +158,7 @@ const NlpComponent = () => {
       console.error("Error performing translation:", error);
     }
   };
+
   React.useEffect(() => {
     if (selectedTargetLanguage) {
       handleTranslation();
@@ -218,7 +237,13 @@ const NlpComponent = () => {
           className={"css-button-3d--blue"}
           onClick={handleTokensAttributtes}
         >
-          Tokens Attributtes
+          Tokens JSON
+        </button>
+        <button
+          className={"css-button-3d--blue"}
+          onClick={handleGetTokenInfo}
+        >
+          Tokens Info
         </button>
         <button
           className={"css-button-3d--blue"}
@@ -356,6 +381,14 @@ const NlpComponent = () => {
           <pre className="json-pre">
             {JSON.stringify(allTokensData, null, 2)}
           </pre>
+        ) : (
+          <p>Loading data...</p>
+        )}
+      </div>
+      <div>
+        <h1>Token info</h1>
+        {tokenInfoData ? (
+         <TokenInfo tokenData={tokenInfoData} />
         ) : (
           <p>Loading data...</p>
         )}
