@@ -1,0 +1,41 @@
+/* TranslationApp.css */
+
+.container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+    padding: 1em;
+  }
+  
+  .label {
+      margin-bottom: 10px;
+  }
+  
+  .input {
+    padding: 10px;
+    border-radius: 5px;
+    width: 50vw;
+  }
+  
+  .radioContainer {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+  }
+  
+  .radioLabel {
+    margin-bottom: 10px;
+  }
+  
+  .button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .result {
+    margin-top: 20px;
+    font-weight: bold;
+  }
+  

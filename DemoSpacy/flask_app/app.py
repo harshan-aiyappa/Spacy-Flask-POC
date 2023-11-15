@@ -1,13 +1,36 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import spacy
-# from langdetect import detect
 from translate import Translator
 from nltk.corpus import wordnet
 from nltk.corpus.reader.wordnet import WordNetError
 
+from deep_translator import (GoogleTranslator,
+                             ChatGptTranslator,
+                             MicrosoftTranslator,
+                             PonsTranslator,
+                             LingueeTranslator,
+                             MyMemoryTranslator,
+                             YandexTranslator,
+                             PapagoTranslator,
+                             DeeplTranslator,
+                             QcriTranslator,
+                             single_detection,
+                             batch_detection)
+
 # language mapping for different ISO language Codes
 # from language_mapping import map_iso_639_1_to_nltk_corpus
+
+
+language_mapping_for_translation = {
+    'en': 'english',
+    'es': 'spanish',
+    'pt': 'portuguese',
+    'hi': 'hindi',
+    'kn': 'kannada',
+    # Add more mappings as needed
+}
+
 
 app = Flask(__name__)
 # translator = Translator()
@@ -47,10 +70,15 @@ def load_spacy_model(language, text):
         raise ValueError("Unsupported language")
 
 
+
+
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
 
+def normalize_language(language):
+    # Normalize the target language to accept either ISO code or full abbreviation
+    return language_mapping_for_translation.get(language.lower(), language.lower())
 
 @app.route('/api/data', methods=['GET'])
 def get_json_data():
@@ -156,8 +184,8 @@ def detect_language(text):
     print(f'Detected language: {detected_language}')
     return detected_language
 
-
-@app.route('/translate', methods=['POST'])
+# translator Translator
+@app.route('/translate/translator', methods=['POST'])
 def translate_text():
     data = request.get_json()
 
@@ -192,6 +220,109 @@ def translate_text():
         return jsonify({'error': str(e)}), 500
 
 
+# MyMemory Translator
+@app.route('/translate/mymemory', methods=['POST'])
+def translate_mymemory():
+    try:
+        data = request.get_json()
+        text_to_translate = data['text']
+        target_language = normalize_language(data['target_language'])
+
+        translated_text = MyMemoryTranslator(source='english', target=target_language).translate(text_to_translate)
+
+        response = {
+            'input_text': text_to_translate,
+            'translated_text': translated_text,
+            'target_language': target_language
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
+        error_response = {
+            'error': str(e)
+        }
+        return jsonify(error_response), 500
+    
+
+# Google Translator
+@app.route('/translate/google', methods=['POST'])
+def translate_google():
+    try:
+        data = request.get_json()
+        text_to_translate = data['text']
+        target_language = normalize_language(data['target_language'])
+
+        translated_text = GoogleTranslator(source='auto', target=target_language).translate(text_to_translate)
+
+        response = {
+            'input_text': text_to_translate,
+            'translated_text': translated_text,
+            'target_language': target_language
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
+        error_response = {
+            'error': str(e)
+        }
+        return jsonify(error_response), 500
+
+# Pons Translator
+@app.route('/translate/pons', methods=['POST'])
+def translate_pons():
+    try:
+        data = request.get_json()
+        text_to_translate = data['text']
+        target_language = normalize_language(data['target_language'])
+
+        translator = PonsTranslator(source='english', target=target_language)
+        translated_text = translator.translate(text_to_translate)
+
+        # Check if the translation is successful
+        if translated_text:
+            response = {
+                'input_text': text_to_translate,
+                'translated_text': translated_text,
+                'target_language': target_language
+            }
+            return jsonify(response)
+        else:
+            raise Exception("Translation failed. Empty response from PonsTranslator.")
+
+    except Exception as e:
+        error_response = {
+            'error': str(e)
+        }
+        print(f"Error in translate_pons: {e}")
+        return jsonify(error_response), 500
+
+# Linguee Translator
+@app.route('/translate/linguee', methods=['POST'])
+def translate_linguee():
+    try:
+        data = request.get_json()
+        
+        text_to_translate = data['text']
+        target_language = normalize_language(data['target_language'])
+
+        translated_text = LingueeTranslator(source='english', target=target_language).translate(text_to_translate)
+
+        response = {
+            'input_text': text_to_translate,
+            'translated_text': translated_text,
+            'target_language': target_language
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
+        error_response = {
+            'error': str(e)
+        }
+        return jsonify(error_response), 500
+    
 def get_synonyms_and_antonyms(word, lang='eng'):
     synonyms = set()
     antonyms = set()
@@ -280,6 +411,7 @@ def get_token_info():
         token_info_list.append(token_info)
 
     return jsonify(token_info_list)
+
 
 @app.errorhandler(400)
 def bad_request(error):

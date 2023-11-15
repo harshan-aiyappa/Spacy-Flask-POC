@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
-import languageData from "./languageData";
-import TokenInfo from "./components/TokenInfo";
-console.log(languageData);
+import languageData from "../languageData";
+import TokenInfo from "./TokenInfo";
+
 const NlpComponent = () => {
   const [text, setText] = useState("");
   const [tokens, setTokens] = useState([]);
@@ -302,14 +302,15 @@ const NlpComponent = () => {
           )}
         </ul>
       </div>
+      <hr></hr>
       <div>
-        <h2>{`Word: ${text}`}</h2>
+        <h2 style={{color:"#FF6C22"}}>{`Word: ${text}`}</h2>
         <div>
           <h3>Synonyms:</h3>
           {synonymsAntonyms.synonyms ? (
             <ul>
               {synonymsAntonyms.synonyms.map((synonym, index) => (
-                <li style={{ listStyleType: "square" }} key={index}>
+                <li style={{ listStyleType: "disc",margin:".8em" }} key={index}>
                   {synonym}
                 </li>
               ))}
@@ -318,12 +319,13 @@ const NlpComponent = () => {
             <p>No synonyms available</p>
           )}
         </div>
+        <hr></hr>
         <div>
           <h3>Antonyms:</h3>
           {synonymsAntonyms.antonyms ? (
-            <ul className="json-pre">
+            <ul>
               {synonymsAntonyms.antonyms.map((antonym, index) => (
-                <li key={index}>{antonym}</li>
+                <li style={{ listStyleType: "disc",margin:".8em" }} key={index}>{antonym}</li>
               ))}
             </ul>
           ) : (
@@ -331,6 +333,7 @@ const NlpComponent = () => {
           )}
         </div>
       </div>
+      <hr></hr>
       <div>
         <h3>Tokens</h3>
         <ul className="json-pre">
@@ -376,7 +379,7 @@ const NlpComponent = () => {
         </ul>
       </div>
       <div>
-        <h1>Token Attributes</h1>
+        <h3>Token Attributes</h3>
         {allTokensData ? (
           <pre className="json-pre">
             {JSON.stringify(allTokensData, null, 2)}
@@ -386,7 +389,7 @@ const NlpComponent = () => {
         )}
       </div>
       <div>
-        <h1>Token info</h1>
+        <h3>Token info</h3>
         {tokenInfoData ? (
          <TokenInfo tokenData={tokenInfoData} />
         ) : (
